@@ -1,0 +1,39 @@
+version: '2.2'
+
+services:
+  web:
+    depends_on:
+      - db
+    image: wordpress
+    expose:
+      - 80
+    volumes:
+      - ./trunk/gurmewp:/var/www/app
+    environment:
+      WORDPRESS_DB_HOST: db:3306
+      WORDPRESS_DB_PASSWORD: wordpress
+  db:
+    image: mysql
+    ports:
+      - 3306:3306
+    volumes:
+      - ./.data/db:/var/lib/mysql
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: wordpress
+      MYSQL_DATABASE: gurmemalaga
+      MYSQL_USER: gurmemalaga
+      MYSQL_PASSWORD: gurmemalaga
+
+  cache:
+    depends_on:
+      - web
+    image: million12/varnish
+    ports: 
+      - 80:80
+    volumes:
+       - ./default.vcl:/etc/varnish/default.vcl
+    environment:
+      CACHE_SIZE: 64m
+      VARNISHD_PARAMS: -p default_ttl=3600 -p default_grace=3600
+     
